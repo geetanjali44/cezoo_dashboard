@@ -47,7 +47,9 @@ const ALLOWED_TABLES = new Set([
     "delivery_upi_orders",
     "upi_orders",
     "reported_issues",
-    "cash_delivery_orders"
+    "cash_delivery_orders",
+    "gsr_products",
+"vijaya_lakshmi_products"
 ]);
 
 const ORDERS_TABLE = "cash_delivery_orders";
@@ -78,16 +80,16 @@ app.get(
                 1
             );
 
-            const limit = Math.min(
-                Math.max(
-                    Number.parseInt(
-                        req.query.limit,
-                        10
-                    ) || 12,
-                    1
-                ),
-                50
-            );
+           const limit = Math.min(
+    Math.max(
+        Number.parseInt(
+            req.query.limit,
+            10
+        ) || 1000,
+        1
+    ),
+    1000
+);
 
             const from =
                 (page - 1) * limit;
