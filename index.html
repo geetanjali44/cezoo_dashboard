@@ -876,6 +876,10 @@ button{
             <option value="vijaya_lakshmi_products">
                 Vijaya Lakshmi Products
             </option>
+
+            <option value="cool_drinks_products">
+                Cool Drinks
+            </option>
             
         </select>
 
@@ -1038,7 +1042,8 @@ button{
 const API_BASE_URL =
     "https://cezoobackend.onrender.com";
 
-const PAGE_SIZE = 1000;
+const PAGE_SIZE = 50;
+const MAIN_DISPLAY_LIMIT = 50;
 
 const tableSelect =
     document.getElementById("tableSelect");
@@ -1101,16 +1106,85 @@ const TABLE_PINS = {
     fresh_products: "1111",
     icecreams: "1111",
     gsr_products: "1111",
-    vijaya_lakshmi_products: "1111"
+    vijaya_lakshmi_products: "1111",
+    cool_drinks_products: "1111"
 };
 
 const TABLE_LABELS = {
-    cezoogroceries: "Groceries & Cool Drinks",
+    cezoogroceries: "Groceries",
     fresh_products: "Vegetables",
     icecreams: "Ice Creams",
     gsr_products: "GSR Products",
-    vijaya_lakshmi_products: "Vijaya Lakshmi Products"
+    vijaya_lakshmi_products: "Vijaya Lakshmi Products",
+    cool_drinks_products: "Cool Drinks"
 };
+
+/*
+    Some dropdown sections use products from the
+    cezoogroceries table by ID range.
+*/
+const CATEGORY_CONFIG = {
+    cezoogroceries: {
+        sourceTable: "cezoogroceries",
+        idFrom: null,
+        idTo: null
+    },
+
+    fresh_products: {
+        sourceTable: "fresh_products",
+        idFrom: null,
+        idTo: null
+    },
+
+    icecreams: {
+        sourceTable: "icecreams",
+        idFrom: null,
+        idTo: null
+    },
+
+    gsr_products: {
+        sourceTable: "cezoogroceries",
+        idFrom: 388,
+        idTo: 444
+    },
+
+    vijaya_lakshmi_products: {
+        sourceTable: "cezoogroceries",
+        idFrom: 461,
+        idTo: 616
+    },
+
+    cool_drinks_products: {
+        sourceTable: "cezoogroceries",
+        idFrom: 620,
+        idTo: 682
+    }
+};
+
+function getCurrentCategoryConfig(){
+    return (
+        CATEGORY_CONFIG[currentTable] ||
+        {
+            sourceTable: currentTable,
+            idFrom: null,
+            idTo: null
+        }
+    );
+}
+
+function getCurrentSourceTable(){
+    return getCurrentCategoryConfig().sourceTable;
+}
+
+function isIdRangeCategory(){
+    const config =
+        getCurrentCategoryConfig();
+
+    return (
+        Number.isInteger(config.idFrom) &&
+        Number.isInteger(config.idTo)
+    );
+}
 
 let currentTable =
     tableSelect.value;
@@ -1119,6 +1193,8 @@ let products = [];
 let page = 1;
 let hasMore = false;
 let loading = false;
+let backgroundLoading = false;
+let totalAvailableProducts = 0;
 
 
 /* ==============================
@@ -1393,7 +1469,7 @@ function renderProducts(){
             .trim()
             .toLowerCase();
 
-    const filtered =
+    const matchedProducts =
         products.filter(product => {
             const searchableText = [
                 product.id,
@@ -1409,15 +1485,35 @@ function renderProducts(){
             return searchableText.includes(keyword);
         });
 
-    visibleProductsText.textContent =
-        filtered.length;
+    /*
+        Normal page:
+        Show only the first 50 products.
 
-    if(filtered.length === 0){
+        Search:
+        Search through every loaded product and show
+        all matching products.
+    */
+    const visibleList =
+        keyword
+            ? matchedProducts
+            : matchedProducts.slice(
+                0,
+                MAIN_DISPLAY_LIMIT
+            );
+
+    visibleProductsText.textContent =
+        visibleList.length;
+
+    if(visibleList.length === 0){
         productsGrid.innerHTML = `
             <div class="empty">
                 <h3>No products found</h3>
                 <p>
-                    Try another table or search word.
+                    ${
+                        backgroundLoading && keyword
+                            ? "Searching all products. Please wait..."
+                            : "Try another table or search word."
+                    }
                 </p>
             </div>
         `;
@@ -1426,7 +1522,7 @@ function renderProducts(){
     }
 
     productsGrid.innerHTML =
-        filtered.map(product => {
+        visibleList.map(product => {
             const imageUrl =
                 product.image1 ||
                 product.image ||
@@ -1607,76 +1703,252 @@ function renderProducts(){
    LOAD PRODUCTS
 ============================== */
 
+async function fetchProductPage(pageNumber){
+    const sourceTable =
+        getCurrentSourceTable();
+
+    const url =
+        `${API_BASE_URL}/api/table/` +
+        `${encodeURIComponent(sourceTable)}` +
+        `?page=${pageNumber}&limit=${PAGE_SIZE}`;
+
+    const response =
+        await fetch(url);
+
+    const result =
+        await response.json();
+
+    if(
+        !response.ok ||
+        !result.success
+    ){
+        throw new Error(
+            result.message ||
+            "Unable to load products"
+        );
+    }
+
+    return result;
+}
+
+async function fetchProductsByIdRange(){
+    const config =
+        getCurrentCategoryConfig();
+
+    const ids = [];
+
+    for(
+        let id = config.idFrom;
+        id <= config.idTo;
+        id += 1
+    ){
+        ids.push(id);
+    }
+
+    const response =
+        await fetch(
+            `${API_BASE_URL}/api/table/` +
+            `${encodeURIComponent(config.sourceTable)}/ids`,
+            {
+                method:"POST",
+
+                headers:{
+                    "Content-Type":
+                        "application/json"
+                },
+
+                body:JSON.stringify({
+                    ids
+                })
+            }
+        );
+
+    const result =
+        await response.json();
+
+    if(
+        !response.ok ||
+        !result.success
+    ){
+        throw new Error(
+            result.message ||
+            "Unable to load products"
+        );
+    }
+
+    return (
+        Array.isArray(result.data)
+            ? result.data.sort(
+                (a,b) =>
+                    Number(a.id) -
+                    Number(b.id)
+            )
+            : []
+    );
+}
+
+async function loadRemainingProducts(
+    tableAtStart,
+    startingPage
+){
+    if(backgroundLoading){
+        return;
+    }
+
+    backgroundLoading = true;
+
+    let nextPage = startingPage;
+    let morePages = true;
+
+    try{
+        while(morePages){
+            /*
+                Stop old loading when the user changes category.
+            */
+            if(currentTable !== tableAtStart){
+                return;
+            }
+
+            const result =
+                await fetchProductPage(nextPage);
+
+            if(currentTable !== tableAtStart){
+                return;
+            }
+
+            const newProducts =
+                Array.isArray(result.data)
+                    ? result.data
+                    : [];
+
+            products = [
+                ...products,
+                ...newProducts
+            ];
+
+            morePages =
+                result.hasMore === true;
+
+            nextPage += 1;
+
+            /*
+                When the user is searching, update results
+                while the remaining products are loading.
+            */
+            if(searchInput.value.trim()){
+                renderProducts();
+            }
+        }
+
+        /*
+            Final render makes sure search includes
+            all products in the selected category.
+        */
+        renderProducts();
+
+    }catch(error){
+        console.error(
+            "Background product loading error:",
+            error
+        );
+
+        showMessage(
+            "Some products could not be loaded for search",
+            "error"
+        );
+
+    }finally{
+        backgroundLoading = false;
+    }
+}
+
 async function loadProducts(reset = false){
     if(loading){
         return;
     }
 
-    if(reset){
-        page = 1;
-        products = [];
-        hasMore = false;
+    loading = true;
+    loadMoreBtn.classList.remove("show");
+    loadMoreBtn.disabled = true;
 
+    if(reset){
+        products = [];
+        page = 1;
+        hasMore = false;
+        totalAvailableProducts = 0;
         showLoading();
     }
 
-    loading = true;
-    loadMoreBtn.disabled = true;
+    const tableAtStart =
+        currentTable;
 
     try{
-        const url =
-            `${API_BASE_URL}/api/table/` +
-            `${encodeURIComponent(currentTable)}` +
-            `?page=${page}&limit=${PAGE_SIZE}`;
+        /*
+            GSR, Vijaya Lakshmi and Cool Drinks are
+            loaded from exact cezoogroceries ID ranges.
+        */
+        if(isIdRangeCategory()){
+            products =
+                await fetchProductsByIdRange();
 
-        const response =
-            await fetch(url);
+            if(currentTable !== tableAtStart){
+                return;
+            }
 
-        const result =
-            await response.json();
+            totalAvailableProducts =
+                products.length;
 
-        if(
-            !response.ok ||
-            !result.success
-        ){
-            throw new Error(
-                result.message ||
-                "Unable to load products"
-            );
+            totalProductsText.textContent =
+                totalAvailableProducts;
+
+            visibleProductsText.textContent =
+                Math.min(
+                    products.length,
+                    MAIN_DISPLAY_LIMIT
+                );
+
+            hasMore = false;
+
+            renderProducts();
+            return;
         }
 
-        const newProducts =
+        /*
+            Normal tables load the first 50 immediately.
+        */
+        const result =
+            await fetchProductPage(1);
+
+        if(currentTable !== tableAtStart){
+            return;
+        }
+
+        products =
             Array.isArray(result.data)
                 ? result.data
                 : [];
 
-        products =
-            reset
-                ? newProducts
-                : [
-                    ...products,
-                    ...newProducts
-                ];
+        totalAvailableProducts =
+            result.total ?? products.length;
 
         totalProductsText.textContent =
-            result.total ?? products.length;
+            totalAvailableProducts;
 
         hasMore =
             result.hasMore === true;
 
-        if(hasMore){
-            page += 1;
+        renderProducts();
 
-            loadMoreBtn.classList.add(
-                "show"
-            );
-        }else{
-            loadMoreBtn.classList.remove(
-                "show"
+        /*
+            Load remaining products quietly so search
+            checks every product in the table.
+        */
+        if(hasMore){
+            loadRemainingProducts(
+                tableAtStart,
+                2
             );
         }
-
-        renderProducts();
 
     }catch(error){
         console.error(error);
@@ -1766,7 +2038,9 @@ async function saveProduct(
         const response =
             await fetch(
                 `${API_BASE_URL}/api/table/` +
-                `${encodeURIComponent(currentTable)}/` +
+                `${encodeURIComponent(
+                    getCurrentSourceTable()
+                )}/` +
                 `${encodeURIComponent(productId)}`,
                 {
                     method:"PATCH",
@@ -1866,7 +2140,9 @@ tableSelect.addEventListener(
 
 searchInput.addEventListener(
     "input",
-    renderProducts
+    () => {
+        renderProducts();
+    }
 );
 
 
@@ -1877,7 +2153,11 @@ searchInput.addEventListener(
 loadMoreBtn.addEventListener(
     "click",
     () => {
-        loadProducts(false);
+        /*
+            Main page is intentionally limited to 50.
+            Search still checks all loaded products.
+        */
+        renderProducts();
     }
 );
 
