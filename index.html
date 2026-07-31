@@ -524,6 +524,40 @@ button{
     font-size:13px;
 }
 
+.image-click-message,
+.image-loading-message{
+    width:100%;
+    height:100%;
+    padding:18px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+}
+
+.image-click-message strong{
+    color:#111827;
+    font-size:14px;
+}
+
+.image-click-message span,
+.image-loading-message span{
+    margin-top:6px;
+    color:#6b7280;
+    font-size:12px;
+    line-height:1.4;
+}
+
+.product-loaded-image{
+    opacity:0;
+    transition:opacity .2s ease;
+}
+
+.product-loaded-image.loaded{
+    opacity:1;
+}
+
 /* ==============================
    CARD CONTENT
 ============================== */
@@ -858,7 +892,7 @@ button{
             class="table-select"
         >
             <option value="cezoogroceries">
-                Groceries & Cool Drinks
+                Groceries
             </option>
 
             <option value="fresh_products">
@@ -897,7 +931,7 @@ button{
 
 </header>
 
-<main class="main">
+<main class="main" id="mainContent">
 
     <section class="stats">
 
@@ -1045,6 +1079,12 @@ const API_BASE_URL =
 const PAGE_SIZE = 50;
 const MAIN_DISPLAY_LIMIT = 50;
 
+/*
+    Delay before each product image starts loading.
+    1500 = 1.5 seconds.
+*/
+const IMAGE_LOAD_DELAY = 500;
+
 const tableSelect =
     document.getElementById("tableSelect");
 
@@ -1072,6 +1112,9 @@ const messageBox =
 
 const lockButton =
     document.getElementById("lockButton");
+
+const mainContent =
+    document.getElementById("mainContent");
 
 const pinModalOverlay =
     document.getElementById("pinModalOverlay");
@@ -1103,11 +1146,11 @@ const pinCancelButton =
 */
 const TABLE_PINS = {
     cezoogroceries: "1111",
-    fresh_products: "1111",
-    icecreams: "1111",
-    gsr_products: "1111",
-    vijaya_lakshmi_products: "1111",
-    cool_drinks_products: "1111"
+    fresh_products: "2222",
+    icecreams: "3333",
+    gsr_products: "4444",
+    vijaya_lakshmi_products: "5555",
+    cool_drinks_products: "6666"
 };
 
 const TABLE_LABELS = {
@@ -1195,6 +1238,7 @@ let hasMore = false;
 let loading = false;
 let backgroundLoading = false;
 let totalAvailableProducts = 0;
+let loadVersion = 0;
 
 
 /* ==============================
@@ -1216,12 +1260,15 @@ function updateLockUI(){
         isCurrentTableUnlocked();
 
     lockButton.textContent =
-        unlocked ? "Unlocked" : "Unlock";
+        unlocked ? "Lock" : "Unlock";
 
     lockButton.classList.toggle(
         "unlocked",
         unlocked
     );
+
+    searchInput.disabled =
+        !unlocked;
 
     document
         .querySelectorAll(".card")
@@ -1312,6 +1359,12 @@ pinForm.addEventListener(
         closePinModal();
         updateLockUI();
 
+        /*
+            After successful unlock, actually fetch
+            and render the selected category products.
+        */
+        loadProducts(true);
+
         showMessage(
             `${TABLE_LABELS[currentTable]} unlocked`,
             "success"
@@ -1370,7 +1423,16 @@ function lockCurrentTable(){
         getLockStorageKey(currentTable)
     );
 
+    resetImageLoader();
+
+    products = [];
+    totalAvailableProducts = 0;
+
+    totalProductsText.textContent = "0";
+    visibleProductsText.textContent = "0";
+
     updateLockUI();
+    showLoading();
 
     showMessage(
         `${TABLE_LABELS[currentTable]} locked`,
@@ -1388,6 +1450,234 @@ lockButton.addEventListener(
         }
     }
 );
+
+
+/* ==============================
+   AUTOMATIC ONE-BY-ONE IMAGE LOAD
+============================== */
+
+let productCardObserver = null;
+let imageLoadQueue = [];
+let imageQueueRunning = false;
+
+function resetImageLoader(){
+    if(productCardObserver){
+        productCardObserver.disconnect();
+        productCardObserver = null;
+    }
+
+    imageLoadQueue = [];
+    imageQueueRunning = false;
+}
+
+function loadProductImageForCard(card){
+    return new Promise(resolve => {
+        if(
+            !card ||
+            !isCurrentTableUnlocked()
+        ){
+            resolve();
+            return;
+        }
+
+        const imageBox =
+            card.querySelector(".image-box");
+
+        if(
+            !imageBox ||
+            imageBox.dataset.imageLoaded === "1" ||
+            imageBox.dataset.imageLoading === "1"
+        ){
+            resolve();
+            return;
+        }
+
+        const imageUrl =
+            imageBox.dataset.imageUrl || "";
+
+        const imageAlt =
+            imageBox.dataset.imageAlt || "Product";
+
+        if(!imageUrl){
+            imageBox.innerHTML = `
+                <span class="no-image">
+                    No image
+                </span>
+            `;
+
+            imageBox.dataset.imageLoaded = "1";
+            resolve();
+            return;
+        }
+
+        imageBox.dataset.imageLoading = "1";
+
+        imageBox.innerHTML = `
+            <div class="image-loading-message">
+                <div class="spinner"></div>
+                <span>Loading this product image...</span>
+            </div>
+        `;
+
+        const image =
+            document.createElement("img");
+
+        image.className =
+            "product-loaded-image";
+
+        image.alt =
+            imageAlt;
+
+        image.onload = () => {
+            imageBox.innerHTML = "";
+            imageBox.appendChild(image);
+
+            requestAnimationFrame(() => {
+                image.classList.add("loaded");
+            });
+
+            imageBox.dataset.imageLoaded = "1";
+            imageBox.dataset.imageLoading = "0";
+
+            resolve();
+        };
+
+        image.onerror = () => {
+            imageBox.innerHTML = `
+                <span class="no-image">
+                    Image unavailable
+                </span>
+            `;
+
+            imageBox.dataset.imageLoaded = "1";
+            imageBox.dataset.imageLoading = "0";
+
+            resolve();
+        };
+
+        /*
+            Wait before starting each image request.
+            Change IMAGE_LOAD_DELAY above to control the delay.
+        */
+        setTimeout(() => {
+            if(
+                !card.isConnected ||
+                !isCurrentTableUnlocked()
+            ){
+                imageBox.dataset.imageLoading = "0";
+                resolve();
+                return;
+            }
+
+            image.src = imageUrl;
+        }, IMAGE_LOAD_DELAY);
+    });
+}
+
+async function runImageQueue(){
+    if(imageQueueRunning){
+        return;
+    }
+
+    imageQueueRunning = true;
+
+    while(imageLoadQueue.length){
+        if(!isCurrentTableUnlocked()){
+            imageLoadQueue = [];
+            break;
+        }
+
+        const card =
+            imageLoadQueue.shift();
+
+        if(!card || !card.isConnected){
+            continue;
+        }
+
+        card.dataset.imageQueued = "0";
+
+        await loadProductImageForCard(card);
+    }
+
+    imageQueueRunning = false;
+}
+
+function queueProductImage(card){
+    if(
+        !card ||
+        card.dataset.imageQueued === "1"
+    ){
+        return;
+    }
+
+    const imageBox =
+        card.querySelector(".image-box");
+
+    if(
+        !imageBox ||
+        imageBox.dataset.imageLoaded === "1" ||
+        imageBox.dataset.imageLoading === "1"
+    ){
+        return;
+    }
+
+    card.dataset.imageQueued = "1";
+    imageLoadQueue.push(card);
+
+    runImageQueue();
+}
+
+function startAutomaticImageLoading(){
+    resetImageLoader();
+
+    if(!isCurrentTableUnlocked()){
+        return;
+    }
+
+    const cards =
+        document.querySelectorAll(".card");
+
+    if(!("IntersectionObserver" in window)){
+        cards.forEach(queueProductImage);
+        return;
+    }
+
+    productCardObserver =
+        new IntersectionObserver(
+            entries => {
+                entries
+                    .filter(entry => entry.isIntersecting)
+                    .sort(
+                        (a,b) =>
+                            a.boundingClientRect.top -
+                            b.boundingClientRect.top
+                    )
+                    .forEach(entry => {
+                        queueProductImage(
+                            entry.target
+                        );
+
+                        productCardObserver.unobserve(
+                            entry.target
+                        );
+                    });
+            },
+            {
+                root:null,
+
+                /*
+                    Start only when the product is actually
+                    close to the visible screen.
+                */
+                rootMargin:"20px 0px",
+                threshold:.20
+            }
+        );
+
+    cards.forEach(card => {
+        productCardObserver.observe(card);
+    });
+}
 
 /* ==============================
    SAFE HTML
@@ -1426,6 +1716,36 @@ function showMessage(text,type){
 ============================== */
 
 function showLoading(){
+
+    if(!isCurrentTableUnlocked()){
+
+        productsGrid.innerHTML = `
+            <div class="loading">
+
+                <h3 style="
+                    margin-bottom:8px;
+                    color:#111827;
+                    font-size:18px;
+                ">
+                    Category Locked
+                </h3>
+
+                <p style="
+                    color:#6b7280;
+                    text-align:center;
+                    line-height:1.6;
+                    max-width:280px;
+                ">
+                    Please unlock this category using the
+                    <b>Unlock</b> button above to view products.
+                </p>
+
+            </div>
+        `;
+
+        return;
+    }
+
     productsGrid.innerHTML = `
         <div class="loading">
             <div class="spinner"></div>
@@ -1464,6 +1784,11 @@ function getProductName(product){
 ============================== */
 
 function renderProducts(){
+    if(!isCurrentTableUnlocked()){
+        showLoading();
+        return;
+    }
+
     const keyword =
         searchInput.value
             .trim()
@@ -1538,37 +1863,17 @@ function renderProducts(){
                     data-id="${escapeHtml(product.id)}"
                 >
 
-                    <div class="image-box">
-
-                        ${
-                            imageUrl
-                                ? `
-                                    <img
-                                        src="${escapeHtml(imageUrl)}"
-                                        alt="${escapeHtml(
-                                            getProductName(product) ||
-                                            "Product"
-                                        )}"
-                                        onerror="
-                                            this.style.display='none';
-                                            this.nextElementSibling.style.display='block';
-                                        "
-                                    >
-
-                                    <span
-                                        class="no-image"
-                                        style="display:none;"
-                                    >
-                                        Image unavailable
-                                    </span>
-                                `
-                                : `
-                                    <span class="no-image">
-                                        No image
-                                    </span>
-                                `
-                        }
-
+                    <div
+                        class="image-box"
+                        data-image-url="${escapeHtml(imageUrl)}"
+                        data-image-alt="${escapeHtml(
+                            getProductName(product) ||
+                            "Product"
+                        )}"
+                        data-image-loaded="0"
+                        data-image-loading="0"
+                    >
+                        
                     </div>
 
                     <div class="card-body">
@@ -1697,6 +2002,10 @@ function renderProducts(){
         .join("");
 
     updateLockUI();
+
+    if(isCurrentTableUnlocked()){
+        startAutomaticImageLoading();
+    }
 }
 
 /* ==============================
@@ -1731,65 +2040,65 @@ async function fetchProductPage(pageNumber){
     return result;
 }
 
-async function fetchProductsByIdRange(){
+async function fetchProductsByIdRange(
+    tableAtStart,
+    requestVersion
+){
     const config =
         getCurrentCategoryConfig();
 
-    const ids = [];
+    let allProducts = [];
+    let pageNumber = 1;
+    let morePages = true;
 
-    for(
-        let id = config.idFrom;
-        id <= config.idTo;
-        id += 1
-    ){
-        ids.push(id);
+    while(morePages){
+        if(
+            currentTable !== tableAtStart ||
+            loadVersion !== requestVersion
+        ){
+            return [];
+        }
+
+        const result =
+            await fetchProductPage(pageNumber);
+
+        const pageProducts =
+            Array.isArray(result.data)
+                ? result.data
+                : [];
+
+        allProducts = [
+            ...allProducts,
+            ...pageProducts
+        ];
+
+        morePages =
+            result.hasMore === true;
+
+        pageNumber += 1;
     }
 
-    const response =
-        await fetch(
-            `${API_BASE_URL}/api/table/` +
-            `${encodeURIComponent(config.sourceTable)}/ids`,
-            {
-                method:"POST",
+    return allProducts
+        .filter(product => {
+            const id =
+                Number(product.id);
 
-                headers:{
-                    "Content-Type":
-                        "application/json"
-                },
-
-                body:JSON.stringify({
-                    ids
-                })
-            }
+            return (
+                id >= config.idFrom &&
+                id <= config.idTo
+            );
+        })
+        .sort(
+            (a,b) =>
+                Number(a.id) -
+                Number(b.id)
         );
-
-    const result =
-        await response.json();
-
-    if(
-        !response.ok ||
-        !result.success
-    ){
-        throw new Error(
-            result.message ||
-            "Unable to load products"
-        );
-    }
-
-    return (
-        Array.isArray(result.data)
-            ? result.data.sort(
-                (a,b) =>
-                    Number(a.id) -
-                    Number(b.id)
-            )
-            : []
-    );
 }
 
 async function loadRemainingProducts(
     tableAtStart,
-    startingPage
+    startingPage,
+    requestVersion
 ){
     if(backgroundLoading){
         return;
@@ -1805,14 +2114,20 @@ async function loadRemainingProducts(
             /*
                 Stop old loading when the user changes category.
             */
-            if(currentTable !== tableAtStart){
+            if(
+                currentTable !== tableAtStart ||
+                loadVersion !== requestVersion
+            ){
                 return;
             }
 
             const result =
                 await fetchProductPage(nextPage);
 
-            if(currentTable !== tableAtStart){
+            if(
+                currentTable !== tableAtStart ||
+                loadVersion !== requestVersion
+            ){
                 return;
             }
 
@@ -1863,11 +2178,24 @@ async function loadRemainingProducts(
 }
 
 async function loadProducts(reset = false){
-    if(loading){
+    if(!isCurrentTableUnlocked()){
+        products = [];
+        totalAvailableProducts = 0;
+
+        totalProductsText.textContent = "0";
+        visibleProductsText.textContent = "0";
+
+        updateLockUI();
+        showLoading();
         return;
     }
 
+    const requestVersion =
+        ++loadVersion;
+
     loading = true;
+    backgroundLoading = false;
+
     loadMoreBtn.classList.remove("show");
     loadMoreBtn.disabled = true;
 
@@ -1876,6 +2204,10 @@ async function loadProducts(reset = false){
         page = 1;
         hasMore = false;
         totalAvailableProducts = 0;
+
+        totalProductsText.textContent = "0";
+        visibleProductsText.textContent = "0";
+
         showLoading();
     }
 
@@ -1884,14 +2216,22 @@ async function loadProducts(reset = false){
 
     try{
         /*
-            GSR, Vijaya Lakshmi and Cool Drinks are
-            loaded from exact cezoogroceries ID ranges.
+            GSR, Vijaya Lakshmi and Cool Drinks:
+            Load the main groceries table page-by-page,
+            then keep only the required ID range.
+            This does not need a special /ids backend route.
         */
         if(isIdRangeCategory()){
             products =
-                await fetchProductsByIdRange();
+                await fetchProductsByIdRange(
+                    tableAtStart,
+                    requestVersion
+                );
 
-            if(currentTable !== tableAtStart){
+            if(
+                currentTable !== tableAtStart ||
+                loadVersion !== requestVersion
+            ){
                 return;
             }
 
@@ -1901,12 +2241,6 @@ async function loadProducts(reset = false){
             totalProductsText.textContent =
                 totalAvailableProducts;
 
-            visibleProductsText.textContent =
-                Math.min(
-                    products.length,
-                    MAIN_DISPLAY_LIMIT
-                );
-
             hasMore = false;
 
             renderProducts();
@@ -1914,12 +2248,15 @@ async function loadProducts(reset = false){
         }
 
         /*
-            Normal tables load the first 50 immediately.
+            Normal category: show the first 50 immediately.
         */
         const result =
             await fetchProductPage(1);
 
-        if(currentTable !== tableAtStart){
+        if(
+            currentTable !== tableAtStart ||
+            loadVersion !== requestVersion
+        ){
             return;
         }
 
@@ -1940,30 +2277,30 @@ async function loadProducts(reset = false){
         renderProducts();
 
         /*
-            Load remaining products quietly so search
-            checks every product in the table.
+            Quietly load remaining pages for full search.
         */
         if(hasMore){
             loadRemainingProducts(
                 tableAtStart,
-                2
+                2,
+                requestVersion
             );
         }
 
     }catch(error){
+        if(
+            currentTable !== tableAtStart ||
+            loadVersion !== requestVersion
+        ){
+            return;
+        }
+
         console.error(error);
 
         productsGrid.innerHTML = `
             <div class="empty">
-
-                <h3>
-                    Could not load products
-                </h3>
-
-                <p>
-                    ${escapeHtml(error.message)}
-                </p>
-
+                <h3>Could not load products</h3>
+                <p>${escapeHtml(error.message)}</p>
             </div>
         `;
 
@@ -1976,8 +2313,10 @@ async function loadProducts(reset = false){
         );
 
     }finally{
-        loading = false;
-        loadMoreBtn.disabled = false;
+        if(loadVersion === requestVersion){
+            loading = false;
+            loadMoreBtn.disabled = false;
+        }
     }
 }
 
@@ -2129,8 +2468,16 @@ tableSelect.addEventListener(
 
         searchInput.value = "";
 
+        resetImageLoader();
+
+        products = [];
+        totalAvailableProducts = 0;
+
+        totalProductsText.textContent = "0";
+        visibleProductsText.textContent = "0";
+
         updateLockUI();
-        loadProducts(true);
+        showLoading();
     }
 );
 
