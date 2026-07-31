@@ -861,10 +861,585 @@ button{
         height:210px;
     }
 }
+.page-shimmer{
+    position:fixed;
+    inset:0;
+    z-index:999999;
+    overflow:auto;
+    background:var(--bg);
+    opacity:1;
+    visibility:visible;
+    transition:opacity .35s ease, visibility .35s ease;
+}
+
+.page-shimmer.hide{
+    opacity:0;
+    visibility:hidden;
+    pointer-events:none;
+}
+
+.skeleton-line,
+.skeleton-box,
+.skeleton-button,
+.skeleton-image{
+    position:relative;
+    overflow:hidden;
+    background:#e7ebe8;
+}
+
+.skeleton-line::after,
+.skeleton-box::after,
+.skeleton-button::after,
+.skeleton-image::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    transform:translateX(-100%);
+    background:linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(255,255,255,.72) 50%,
+        transparent 100%
+    );
+    animation:skeletonSweep 1.05s linear infinite;
+}
+
+@keyframes skeletonSweep{
+    to{
+        transform:translateX(100%);
+    }
+}
+
+.skeleton-topbar{
+    min-height:78px;
+    padding:14px 24px;
+    background:#fff;
+    border-bottom:1px solid var(--border);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:18px;
+}
+
+.skeleton-brand{
+    display:flex;
+    align-items:center;
+    gap:12px;
+}
+
+.skeleton-logo{
+    width:48px;
+    height:48px;
+    border-radius:14px;
+}
+
+.skeleton-brand-copy{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+}
+
+.skeleton-brand-title{
+    width:92px;
+    height:15px;
+    border-radius:7px;
+}
+
+.skeleton-brand-subtitle{
+    width:68px;
+    height:9px;
+    border-radius:5px;
+}
+
+.skeleton-top-actions{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-left:auto;
+}
+
+.skeleton-select{
+    width:220px;
+    height:44px;
+    border-radius:11px;
+}
+
+.skeleton-lock{
+    width:88px;
+    height:44px;
+    border-radius:11px;
+}
+
+.skeleton-main{
+    width:min(1450px,95%);
+    margin:22px auto 50px;
+}
+
+.skeleton-stats{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:14px;
+    margin-bottom:18px;
+}
+
+.skeleton-stat{
+    min-height:98px;
+    padding:17px;
+    border:1px solid var(--border);
+    border-radius:16px;
+    background:#fff;
+}
+
+.skeleton-stat-label{
+    width:92px;
+    height:10px;
+    margin-bottom:14px;
+    border-radius:5px;
+}
+
+.skeleton-stat-value{
+    width:54%;
+    height:24px;
+    border-radius:8px;
+}
+
+.skeleton-toolbar{
+    padding:14px;
+    margin-bottom:18px;
+    border:1px solid var(--border);
+    border-radius:16px;
+    background:#fff;
+}
+
+.skeleton-search{
+    width:100%;
+    height:46px;
+    border-radius:12px;
+}
+
+.skeleton-products{
+    display:grid;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:16px;
+}
+
+.skeleton-card{
+    overflow:hidden;
+    border:1px solid var(--border);
+    border-radius:17px;
+    background:#fff;
+    box-shadow:0 8px 28px rgba(22,50,30,.05);
+}
+
+.skeleton-image{
+    width:100%;
+    height:190px;
+    border-bottom:1px solid var(--border);
+}
+
+.skeleton-card-body{
+    padding:14px;
+}
+
+.skeleton-id{
+    width:62px;
+    height:20px;
+    margin-bottom:13px;
+    border-radius:20px;
+}
+
+.skeleton-label{
+    width:72px;
+    height:9px;
+    margin-bottom:7px;
+    border-radius:5px;
+}
+
+.skeleton-input{
+    width:100%;
+    height:40px;
+    margin-bottom:12px;
+    border-radius:9px;
+}
+
+.skeleton-double-row{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+}
+
+.skeleton-field{
+    min-width:0;
+}
+
+.skeleton-button{
+    width:100%;
+    height:43px;
+    margin-top:2px;
+    border-radius:10px;
+    background:#d8eede;
+}
+
+@media(max-width:1100px){
+    .skeleton-products{
+        grid-template-columns:repeat(3,minmax(0,1fr));
+    }
+}
+
+@media(max-width:800px){
+    .skeleton-topbar{
+        min-height:72px;
+        padding:11px 12px;
+        gap:10px;
+    }
+
+    .skeleton-logo{
+        width:38px;
+        height:38px;
+        border-radius:11px;
+    }
+
+    .skeleton-brand-title{
+        width:66px;
+        height:12px;
+    }
+
+    .skeleton-brand-subtitle{
+        width:54px;
+        height:8px;
+    }
+
+    .skeleton-select{
+        width:112px;
+        height:42px;
+    }
+
+    .skeleton-lock{
+        width:72px;
+        height:40px;
+    }
+
+    .skeleton-main{
+        width:94%;
+        margin-top:16px;
+    }
+
+    .skeleton-stats{
+        grid-template-columns:1fr;
+    }
+
+    .skeleton-products{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+        gap:11px;
+    }
+
+    .skeleton-image{
+        height:145px;
+    }
+
+    .skeleton-card-body{
+        padding:11px;
+    }
+}
+
+@media(max-width:480px){
+    .skeleton-top-actions{
+        gap:7px;
+    }
+
+    .skeleton-select{
+        width:100px;
+    }
+
+    .skeleton-lock{
+        width:66px;
+    }
+
+    .skeleton-products{
+        grid-template-columns:1fr;
+    }
+
+    .skeleton-image{
+        height:210px;
+    }
+}
 </style>
 </head>
 
 <body>
+
+<div id="pageShimmer" class="page-shimmer" aria-hidden="true">
+    <div class="skeleton-topbar">
+        <div class="skeleton-brand">
+            <div class="skeleton-box skeleton-logo"></div>
+            <div class="skeleton-brand-copy">
+                <div class="skeleton-line skeleton-brand-title"></div>
+                <div class="skeleton-line skeleton-brand-subtitle"></div>
+            </div>
+        </div>
+
+        <div class="skeleton-top-actions">
+            <div class="skeleton-box skeleton-select"></div>
+            <div class="skeleton-box skeleton-lock"></div>
+        </div>
+    </div>
+
+    <div class="skeleton-main">
+        <div class="skeleton-stats">
+            <div class="skeleton-stat">
+                <div class="skeleton-line skeleton-stat-label"></div>
+                <div class="skeleton-line skeleton-stat-value"></div>
+            </div>
+            <div class="skeleton-stat">
+                <div class="skeleton-line skeleton-stat-label"></div>
+                <div class="skeleton-line skeleton-stat-value"></div>
+            </div>
+            <div class="skeleton-stat">
+                <div class="skeleton-line skeleton-stat-label"></div>
+                <div class="skeleton-line skeleton-stat-value"></div>
+            </div>
+        </div>
+
+        <div class="skeleton-toolbar">
+            <div class="skeleton-box skeleton-search"></div>
+        </div>
+
+        <div class="skeleton-products">
+            <article class="skeleton-card">
+                <div class="skeleton-image"></div>
+                <div class="skeleton-card-body">
+                    <div class="skeleton-box skeleton-id"></div>
+                    <div class="skeleton-line skeleton-label"></div>
+                    <div class="skeleton-box skeleton-input"></div>
+                    <div class="skeleton-double-row">
+                        <div class="skeleton-field">
+                            <div class="skeleton-line skeleton-label"></div>
+                            <div class="skeleton-box skeleton-input"></div>
+                        </div>
+                        <div class="skeleton-field">
+                            <div class="skeleton-line skeleton-label"></div>
+                            <div class="skeleton-box skeleton-input"></div>
+                        </div>
+                    </div>
+                    <div class="skeleton-double-row">
+                        <div class="skeleton-field">
+                            <div class="skeleton-line skeleton-label"></div>
+                            <div class="skeleton-box skeleton-input"></div>
+                        </div>
+                        <div class="skeleton-field">
+                            <div class="skeleton-line skeleton-label"></div>
+                            <div class="skeleton-box skeleton-input"></div>
+                        </div>
+                    </div>
+                    <div class="skeleton-button"></div>
+                </div>
+            </article>
+            <article class="skeleton-card">
+                <div class="skeleton-image"></div>
+                <div class="skeleton-card-body">
+                    <div class="skeleton-box skeleton-id"></div>
+                    <div class="skeleton-line skeleton-label"></div>
+                    <div class="skeleton-box skeleton-input"></div>
+                    <div class="skeleton-double-row">
+                        <div class="skeleton-field">
+                            <div class="skeleton-line skeleton-label"></div>
+                            <div class="skeleton-box skeleton-input"></div>
+                        </div>
+                        <div class="skeleton-field">
+                            <div class="skeleton-line skeleton-label"></div>
+                            <div class="skeleton-box skeleton-input"></div>
+                        </div>
+                    </div>
+                    <div class="skeleton-double-row">
+                        <div class="skeleton-field">
+                            <div class="skeleton-line skeleton-label"></div>
+                            <div class="skeleton-box skeleton-input"></div>
+                        </div>
+                        <div class="skeleton-field">
+                            <div class="skeleton-line skeleton-label"></div>
+                            <div class="skeleton-box skeleton-input"></div>
+                        </div>
+                    </div>
+                    <div class="skeleton-button"></div>
+                </div>
+            </article>
+            <article class="skeleton-card">
+                <div class="skeleton-image"></div>
+                <div class="skeleton-card-body">
+                    <div class="skeleton-box skeleton-id"></div>
+                    <div class="skeleton-line skeleton-label"></div>
+                    <div class="skeleton-box skeleton-input"></div>
+                    <div class="skeleton-double-row">
+                        <div class="skeleton-field">
+                            <div class="skeleton-line skeleton-label"></div>
+                            <div class="skeleton-box skeleton-input"></div>
+                        </div>
+                        <div class="skeleton-field">
+                            <div class="skeleton-line skeleton-label"></div>
+                            <div class="skeleton-box skeleton-input"></div>
+                        </div>
+                    </div>
+                    <div class="skeleton-double-row">
+                        <div class="skeleton-field">
+                            <div class="skeleton-line skeleton-label"></div>
+                            <div class="skeleton-box skeleton-input"></div>
+                        </div>
+                        <div class="skeleton-field">
+                            <div class="skeleton-line skeleton-label"></div>
+                            <div class="skeleton-box skeleton-input"></div>
+                        </div>
+                    </div>
+                    <div class="skeleton-button"></div>
+                </div>
+            </article>
+            <article class="skeleton-card">
+                <div class="skeleton-image"></div>
+                <div class="skeleton-card-body">
+                    <div class="skeleton-box skeleton-id"></div>
+                    <div class="skeleton-line skeleton-label"></div>
+                    <div class="skeleton-box skeleton-input"></div>
+                    <div class="skeleton-double-row">
+                        <div class="skeleton-field">
+                            <div class="skeleton-line skeleton-label"></div>
+                            <div class="skeleton-box skeleton-input"></div>
+                        </div>
+                        <div class="skeleton-field">
+                            <div class="skeleton-line skeleton-label"></div>
+                            <div class="skeleton-box skeleton-input"></div>
+                        </div>
+                    </div>
+                    <div class="skeleton-double-row">
+                        <div class="skeleton-field">
+                            <div class="skeleton-line skeleton-label"></div>
+                            <div class="skeleton-box skeleton-input"></div>
+                        </div>
+                        <div class="skeleton-field">
+                            <div class="skeleton-line skeleton-label"></div>
+                            <div class="skeleton-box skeleton-input"></div>
+                        </div>
+                    </div>
+                    <div class="skeleton-button"></div>
+                </div>
+            </article>
+            <article class="skeleton-card">
+                <div class="skeleton-image"></div>
+                <div class="skeleton-card-body">
+                    <div class="skeleton-box skeleton-id"></div>
+                    <div class="skeleton-line skeleton-label"></div>
+                    <div class="skeleton-box skeleton-input"></div>
+                    <div class="skeleton-double-row">
+                        <div class="skeleton-field">
+                            <div class="skeleton-line skeleton-label"></div>
+                            <div class="skeleton-box skeleton-input"></div>
+                        </div>
+                        <div class="skeleton-field">
+                            <div class="skeleton-line skeleton-label"></div>
+                            <div class="skeleton-box skeleton-input"></div>
+                        </div>
+                    </div>
+                    <div class="skeleton-double-row">
+                        <div class="skeleton-field">
+                            <div class="skeleton-line skeleton-label"></div>
+                            <div class="skeleton-box skeleton-input"></div>
+                        </div>
+                        <div class="skeleton-field">
+                            <div class="skeleton-line skeleton-label"></div>
+                            <div class="skeleton-box skeleton-input"></div>
+                        </div>
+                    </div>
+                    <div class="skeleton-button"></div>
+                </div>
+            </article>
+            <article class="skeleton-card">
+                <div class="skeleton-image"></div>
+                <div class="skeleton-card-body">
+                    <div class="skeleton-box skeleton-id"></div>
+                    <div class="skeleton-line skeleton-label"></div>
+                    <div class="skeleton-box skeleton-input"></div>
+                    <div class="skeleton-double-row">
+                        <div class="skeleton-field">
+                            <div class="skeleton-line skeleton-label"></div>
+                            <div class="skeleton-box skeleton-input"></div>
+                        </div>
+                        <div class="skeleton-field">
+                            <div class="skeleton-line skeleton-label"></div>
+                            <div class="skeleton-box skeleton-input"></div>
+                        </div>
+                    </div>
+                    <div class="skeleton-double-row">
+                        <div class="skeleton-field">
+                            <div class="skeleton-line skeleton-label"></div>
+                            <div class="skeleton-box skeleton-input"></div>
+                        </div>
+                        <div class="skeleton-field">
+                            <div class="skeleton-line skeleton-label"></div>
+                            <div class="skeleton-box skeleton-input"></div>
+                        </div>
+                    </div>
+                    <div class="skeleton-button"></div>
+                </div>
+            </article>
+            <article class="skeleton-card">
+                <div class="skeleton-image"></div>
+                <div class="skeleton-card-body">
+                    <div class="skeleton-box skeleton-id"></div>
+                    <div class="skeleton-line skeleton-label"></div>
+                    <div class="skeleton-box skeleton-input"></div>
+                    <div class="skeleton-double-row">
+                        <div class="skeleton-field">
+                            <div class="skeleton-line skeleton-label"></div>
+                            <div class="skeleton-box skeleton-input"></div>
+                        </div>
+                        <div class="skeleton-field">
+                            <div class="skeleton-line skeleton-label"></div>
+                            <div class="skeleton-box skeleton-input"></div>
+                        </div>
+                    </div>
+                    <div class="skeleton-double-row">
+                        <div class="skeleton-field">
+                            <div class="skeleton-line skeleton-label"></div>
+                            <div class="skeleton-box skeleton-input"></div>
+                        </div>
+                        <div class="skeleton-field">
+                            <div class="skeleton-line skeleton-label"></div>
+                            <div class="skeleton-box skeleton-input"></div>
+                        </div>
+                    </div>
+                    <div class="skeleton-button"></div>
+                </div>
+            </article>
+            <article class="skeleton-card">
+                <div class="skeleton-image"></div>
+                <div class="skeleton-card-body">
+                    <div class="skeleton-box skeleton-id"></div>
+                    <div class="skeleton-line skeleton-label"></div>
+                    <div class="skeleton-box skeleton-input"></div>
+                    <div class="skeleton-double-row">
+                        <div class="skeleton-field">
+                            <div class="skeleton-line skeleton-label"></div>
+                            <div class="skeleton-box skeleton-input"></div>
+                        </div>
+                        <div class="skeleton-field">
+                            <div class="skeleton-line skeleton-label"></div>
+                            <div class="skeleton-box skeleton-input"></div>
+                        </div>
+                    </div>
+                    <div class="skeleton-double-row">
+                        <div class="skeleton-field">
+                            <div class="skeleton-line skeleton-label"></div>
+                            <div class="skeleton-box skeleton-input"></div>
+                        </div>
+                        <div class="skeleton-field">
+                            <div class="skeleton-line skeleton-label"></div>
+                            <div class="skeleton-box skeleton-input"></div>
+                        </div>
+                    </div>
+                    <div class="skeleton-button"></div>
+                </div>
+            </article>
+        </div>
+    </div>
+</div>
 
 <header class="topbar">
 
@@ -2515,6 +3090,9 @@ loadMoreBtn.addEventListener(
 document.addEventListener(
     "DOMContentLoaded",
     () => {
+        const pageShimmer =
+            document.getElementById("pageShimmer");
+
         /*
             Start with the current category locked.
         */
@@ -2527,6 +3105,23 @@ document.addEventListener(
 
         updateLockUI();
         loadProducts(true);
+
+        /*
+            Page-load shimmer only.
+            It does not control product-image loading.
+        */
+        setTimeout(() => {
+            if(!pageShimmer){
+                return;
+            }
+
+            pageShimmer.classList.add("hide");
+
+            setTimeout(() => {
+                pageShimmer.remove();
+            },350);
+
+        },2000);
     }
 );
 </script>
