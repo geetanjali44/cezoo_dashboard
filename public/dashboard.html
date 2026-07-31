@@ -1,1 +1,1299 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>CEZOO Product Admin</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+:root{
+    --green:#22c55e;
+    --dark-green:#16a34a;
+    --light-green:#ecfdf3;
+    --bg:#f5f7f5;
+    --white:#ffffff;
+    --text:#17211a;
+    --muted:#6b7280;
+    --border:#e4e8e5;
+}
+
+body{
+    min-height:100vh;
+    background:var(--bg);
+    color:var(--text);
+    font-family:Arial,Helvetica,sans-serif;
+}
+
+button,
+input,
+select{
+    font:inherit;
+}
+
+button{
+    cursor:pointer;
+}
+
+/* ==============================
+   TOP BAR
+============================== */
+
+.topbar{
+    position:sticky;
+    top:0;
+    z-index:100;
+
+    min-height:78px;
+    padding:14px 24px;
+
+    background:#fff;
+    border-bottom:1px solid var(--border);
+
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:18px;
+}
+
+.brand{
+    min-width:0;
+
+    display:flex;
+    align-items:center;
+    gap:12px;
+}
+
+.logo{
+    width:48px;
+    height:48px;
+    flex-shrink:0;
+
+    border-radius:14px;
+    background:var(--green);
+    color:#fff;
+
+    display:grid;
+    place-items:center;
+
+    font-size:22px;
+    font-weight:900;
+}
+
+.brand h1{
+    font-size:21px;
+}
+
+.brand p{
+    margin-top:3px;
+    color:var(--muted);
+    font-size:12px;
+}
+
+/* ==============================
+   TABLE DROPDOWN
+============================== */
+
+.table-select-wrap{
+    min-width:220px;
+    margin-left:auto;
+}
+
+.table-select-wrap label{
+    display:block;
+    margin-bottom:5px;
+
+    color:var(--muted);
+    font-size:11px;
+    font-weight:700;
+    text-transform:uppercase;
+}
+
+.table-select{
+    width:100%;
+    height:44px;
+
+    padding:0 12px;
+
+    border:1px solid var(--border);
+    border-radius:11px;
+    outline:none;
+
+    background:#fafafa;
+    font-weight:700;
+}
+
+.table-select:focus{
+    border-color:var(--green);
+}
+
+/* ==============================
+   MAIN
+============================== */
+
+.main{
+    width:min(1450px,95%);
+    margin:22px auto 50px;
+}
+
+/* ==============================
+   STATS
+============================== */
+
+.stats{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:14px;
+
+    margin-bottom:18px;
+}
+
+.stat{
+    padding:17px;
+
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:16px;
+}
+
+.stat small{
+    color:var(--muted);
+    font-size:12px;
+}
+
+.stat strong{
+    display:block;
+    margin-top:7px;
+    font-size:24px;
+    word-break:break-word;
+}
+
+/* ==============================
+   TOOLBAR
+============================== */
+
+.toolbar{
+    padding:14px;
+    margin-bottom:18px;
+
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:16px;
+
+    display:flex;
+    align-items:center;
+    gap:12px;
+}
+
+.search{
+    flex:1;
+    height:46px;
+
+    padding:0 14px;
+
+    border:1px solid var(--border);
+    border-radius:12px;
+    outline:none;
+}
+
+.search:focus{
+    border-color:var(--green);
+}
+
+
+/* ==============================
+   MESSAGE
+============================== */
+
+.message{
+    display:none;
+
+    margin-bottom:16px;
+    padding:12px 14px;
+
+    border-radius:11px;
+
+    font-size:14px;
+    font-weight:700;
+}
+
+.message.show{
+    display:block;
+}
+
+.message.success{
+    background:#dcfce7;
+    color:#166534;
+}
+
+.message.error{
+    background:#fee2e2;
+    color:#991b1b;
+}
+
+/* ==============================
+   PRODUCTS GRID
+============================== */
+
+.products{
+    display:grid;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:16px;
+}
+
+.card{
+    overflow:hidden;
+
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:17px;
+
+    box-shadow:0 8px 28px rgba(22,50,30,.05);
+}
+
+/* ==============================
+   PRODUCT IMAGE
+============================== */
+
+.image-box{
+    height:190px;
+
+    background:#f8faf8;
+    border-bottom:1px solid var(--border);
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.image-box img{
+    width:100%;
+    height:100%;
+
+    object-fit:contain;
+    padding:12px;
+}
+
+.no-image{
+    color:#9ca3af;
+    font-size:13px;
+}
+
+/* ==============================
+   CARD CONTENT
+============================== */
+
+.card-body{
+    padding:14px;
+}
+
+.product-id{
+    display:inline-block;
+
+    margin-bottom:11px;
+    padding:5px 8px;
+
+    border-radius:20px;
+
+    background:var(--light-green);
+    color:var(--dark-green);
+
+    font-size:11px;
+    font-weight:800;
+}
+
+.form-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+}
+
+.field{
+    min-width:0;
+}
+
+.field.full{
+    grid-column:1/-1;
+}
+
+.field label{
+    display:block;
+
+    margin-bottom:5px;
+
+    color:var(--muted);
+    font-size:11px;
+    font-weight:700;
+}
+
+.field input{
+    width:100%;
+    height:40px;
+
+    padding:0 10px;
+
+    border:1px solid var(--border);
+    border-radius:9px;
+    outline:none;
+
+    background:#fff;
+}
+
+.field input:focus{
+    border-color:var(--green);
+    box-shadow:0 0 0 3px rgba(34,197,94,.1);
+}
+
+/* Prices and Quantity/Unit stay in the same row */
+
+.price-row,
+.quantity-unit-row{
+    grid-column:1/-1;
+
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+}
+
+/* ==============================
+   SAVE BUTTON
+============================== */
+
+.save-btn{
+    width:100%;
+    height:43px;
+
+    margin-top:12px;
+
+    border:none;
+    border-radius:10px;
+
+    background:var(--green);
+    color:#fff;
+
+    font-weight:800;
+}
+
+.save-btn:hover{
+    background:var(--dark-green);
+}
+
+.save-btn:disabled{
+    opacity:.65;
+    cursor:not-allowed;
+}
+
+/* ==============================
+   LOADING / EMPTY
+============================== */
+
+.loading,
+.empty{
+    grid-column:1/-1;
+
+    min-height:240px;
+    padding:30px;
+
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:17px;
+
+    color:var(--muted);
+    text-align:center;
+
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+}
+
+.empty h3{
+    margin-bottom:7px;
+    color:var(--text);
+}
+
+.spinner{
+    width:40px;
+    height:40px;
+
+    margin-bottom:13px;
+
+    border:4px solid #dcfce7;
+    border-top-color:var(--green);
+    border-radius:50%;
+
+    animation:spin .8s linear infinite;
+}
+
+@keyframes spin{
+    to{
+        transform:rotate(360deg);
+    }
+}
+
+/* ==============================
+   LOAD MORE
+============================== */
+
+.load-more{
+    display:none;
+
+    width:220px;
+    height:46px;
+
+    margin:22px auto 0;
+
+    border:none;
+    border-radius:12px;
+
+    background:#111827;
+    color:#fff;
+
+    font-weight:800;
+}
+
+.load-more.show{
+    display:block;
+}
+
+/* ==============================
+   RESPONSIVE
+============================== */
+
+@media(max-width:1100px){
+    .products{
+        grid-template-columns:repeat(3,minmax(0,1fr));
+    }
+}
+
+@media(max-width:800px){
+    .topbar{
+        min-height:72px;
+
+        padding:11px 12px;
+
+        flex-direction:row;
+        align-items:center;
+        gap:10px;
+    }
+
+    .brand{
+        flex:1;
+    }
+
+    .logo{
+        width:42px;
+        height:42px;
+
+        border-radius:12px;
+        font-size:19px;
+    }
+
+    .brand h1{
+        font-size:16px;
+
+        white-space:nowrap;
+        overflow:hidden;
+        text-overflow:ellipsis;
+    }
+
+    .brand p{
+        display:none;
+    }
+
+    .table-select-wrap{
+        width:145px;
+        min-width:145px;
+        margin-left:auto;
+    }
+
+    .table-select-wrap label{
+        display:none;
+    }
+
+    .table-select{
+        height:42px;
+
+        padding:0 30px 0 10px;
+
+        background:#fff;
+        font-size:13px;
+    }
+
+    .main{
+        width:94%;
+        margin-top:16px;
+    }
+
+    .stats{
+        grid-template-columns:1fr;
+    }
+
+    .toolbar{
+        flex-direction:column;
+        align-items:stretch;
+    }
+
+    .products{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+        gap:11px;
+    }
+
+    .image-box{
+        height:145px;
+    }
+
+    .card-body{
+        padding:11px;
+    }
+
+    .form-grid{
+        grid-template-columns:1fr;
+    }
+
+    .field.full{
+        grid-column:auto;
+    }
+
+    .price-row,
+    .quantity-unit-row{
+        grid-column:auto;
+        grid-template-columns:1fr 1fr;
+    }
+}
+
+@media(max-width:480px){
+    .products{
+        grid-template-columns:1fr;
+    }
+
+    .image-box{
+        height:210px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header class="topbar">
+
+    <div class="brand">
+
+        <div class="logo">
+            C
+        </div>
+
+        <div>
+            <h1>CEZOO Product Admin</h1>
+            <p>View and update your products</p>
+        </div>
+
+    </div>
+
+    <div class="table-select-wrap">
+
+        <label for="tableSelect">
+            Select product table
+        </label>
+
+        <select
+            id="tableSelect"
+            class="table-select"
+        >
+            <option value="cezoogroceries">
+                Groceries
+            </option>
+
+            <option value="fresh_products">
+                Fruits
+            </option>
+
+            <option value="icecreams">
+                Ice Creams
+            </option>
+            
+        </select>
+
+    </div>
+
+</header>
+
+<main class="main">
+
+    <section class="stats">
+
+        <div class="stat">
+            <small>Current table</small>
+            <strong id="currentTable">
+                cezoogroceries
+            </strong>
+        </div>
+
+        <div class="stat">
+            <small>Total products</small>
+            <strong id="totalProducts">
+                0
+            </strong>
+        </div>
+
+        <div class="stat">
+            <small>Visible products</small>
+            <strong id="visibleProducts">
+                0
+            </strong>
+        </div>
+
+    </section>
+
+    <section class="toolbar">
+
+        <input
+            id="searchInput"
+            class="search"
+            type="search"
+            placeholder="Search product name or ID"
+        >
+</section>
+
+    <div
+        id="message"
+        class="message"
+    ></div>
+
+    <section
+        id="productsGrid"
+        class="products"
+    >
+        <div class="loading">
+            <div class="spinner"></div>
+            <p>Loading products...</p>
+        </div>
+    </section>
+
+    <button
+        id="loadMoreBtn"
+        class="load-more"
+        type="button"
+    >
+        Load More
+    </button>
+
+</main>
+
+<script>
+const API_BASE_URL =
+    "https://cezoobackend.onrender.com";
+
+const PAGE_SIZE = 1000;
+
+const tableSelect =
+    document.getElementById("tableSelect");
+
+const searchInput =
+    document.getElementById("searchInput");
+
+
+const loadMoreBtn =
+    document.getElementById("loadMoreBtn");
+
+const productsGrid =
+    document.getElementById("productsGrid");
+
+const currentTableText =
+    document.getElementById("currentTable");
+
+const totalProductsText =
+    document.getElementById("totalProducts");
+
+const visibleProductsText =
+    document.getElementById("visibleProducts");
+
+const messageBox =
+    document.getElementById("message");
+
+let currentTable =
+    tableSelect.value;
+
+let products = [];
+let page = 1;
+let hasMore = false;
+let loading = false;
+
+/* ==============================
+   SAFE HTML
+============================== */
+
+function escapeHtml(value){
+    return String(value ?? "")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+}
+
+/* ==============================
+   MESSAGE
+============================== */
+
+function showMessage(text,type){
+    messageBox.textContent = text;
+
+    messageBox.className =
+        "message show " + type;
+
+    clearTimeout(showMessage.timer);
+
+    showMessage.timer = setTimeout(() => {
+        messageBox.className = "message";
+        messageBox.textContent = "";
+    },3500);
+}
+
+/* ==============================
+   LOADING
+============================== */
+
+function showLoading(){
+    productsGrid.innerHTML = `
+        <div class="loading">
+            <div class="spinner"></div>
+            <p>Loading products...</p>
+        </div>
+    `;
+}
+
+/* ==============================
+   NAME COLUMN SUPPORT
+============================== */
+
+function getNameField(product){
+    if(
+        Object.prototype.hasOwnProperty.call(
+            product,
+            "product_name"
+        )
+    ){
+        return "product_name";
+    }
+
+    return "name";
+}
+
+function getProductName(product){
+    return (
+        product.product_name ??
+        product.name ??
+        ""
+    );
+}
+
+/* ==============================
+   RENDER PRODUCTS
+============================== */
+
+function renderProducts(){
+    const keyword =
+        searchInput.value
+            .trim()
+            .toLowerCase();
+
+    const filtered =
+        products.filter(product => {
+            const searchableText = [
+                product.id,
+                getProductName(product),
+                product.quantity,
+                product.unit,
+                product.original_price,
+                product.discount_price
+            ]
+            .join(" ")
+            .toLowerCase();
+
+            return searchableText.includes(keyword);
+        });
+
+    visibleProductsText.textContent =
+        filtered.length;
+
+    if(filtered.length === 0){
+        productsGrid.innerHTML = `
+            <div class="empty">
+                <h3>No products found</h3>
+                <p>
+                    Try another table or search word.
+                </p>
+            </div>
+        `;
+
+        return;
+    }
+
+    productsGrid.innerHTML =
+        filtered.map(product => {
+            const imageUrl =
+                product.image1 ||
+                product.image ||
+                product.image_url ||
+                "";
+
+            const nameField =
+                getNameField(product);
+
+            return `
+                <article
+                    class="card"
+                    data-id="${escapeHtml(product.id)}"
+                >
+
+                    <div class="image-box">
+
+                        ${
+                            imageUrl
+                                ? `
+                                    <img
+                                        src="${escapeHtml(imageUrl)}"
+                                        alt="${escapeHtml(
+                                            getProductName(product) ||
+                                            "Product"
+                                        )}"
+                                        onerror="
+                                            this.style.display='none';
+                                            this.nextElementSibling.style.display='block';
+                                        "
+                                    >
+
+                                    <span
+                                        class="no-image"
+                                        style="display:none;"
+                                    >
+                                        Image unavailable
+                                    </span>
+                                `
+                                : `
+                                    <span class="no-image">
+                                        No image
+                                    </span>
+                                `
+                        }
+
+                    </div>
+
+                    <div class="card-body">
+
+                        <span class="product-id">
+                            ID: ${escapeHtml(product.id)}
+                        </span>
+
+                        <div class="form-grid">
+
+                            <div class="field full">
+
+                                <label>
+                                    Product Name
+                                </label>
+
+                                <input
+                                    data-field="${escapeHtml(nameField)}"
+                                    value="${escapeHtml(
+                                        getProductName(product)
+                                    )}"
+                                    placeholder="Product name"
+                                >
+
+                            </div>
+
+                            <div class="price-row">
+
+                                <div class="field">
+
+                                    <label>
+                                        Original Price
+                                    </label>
+
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        data-field="original_price"
+                                        value="${escapeHtml(
+                                            product.original_price ?? ""
+                                        )}"
+                                        placeholder="0"
+                                    >
+
+                                </div>
+
+                                <div class="field">
+
+                                    <label>
+                                        Discount Price
+                                    </label>
+
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        data-field="discount_price"
+                                        value="${escapeHtml(
+                                            product.discount_price ?? ""
+                                        )}"
+                                        placeholder="0"
+                                    >
+
+                                </div>
+
+                            </div>
+
+                            <div class="quantity-unit-row">
+
+                                <div class="field">
+
+                                    <label>
+                                        Quantity
+                                    </label>
+
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        data-field="quantity"
+                                        value="${escapeHtml(
+                                            product.quantity ?? ""
+                                        )}"
+                                        placeholder="Example: 500"
+                                    >
+
+                                </div>
+
+                                <div class="field">
+
+                                    <label>
+                                        Unit
+                                    </label>
+
+                                    <input
+                                        data-field="unit"
+                                        value="${escapeHtml(
+                                            product.unit ?? ""
+                                        )}"
+                                        placeholder="g / kg / ml / pcs"
+                                    >
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <button
+                            type="button"
+                            class="save-btn"
+                            onclick="saveProduct(
+                                ${Number(product.id)},
+                                this
+                            )"
+                        >
+                            Save Changes
+                        </button>
+
+                    </div>
+
+                </article>
+            `;
+        })
+        .join("");
+}
+
+/* ==============================
+   LOAD PRODUCTS
+============================== */
+
+async function loadProducts(reset = false){
+    if(loading){
+        return;
+    }
+
+    if(reset){
+        page = 1;
+        products = [];
+        hasMore = false;
+
+        showLoading();
+    }
+
+    loading = true;
+    loadMoreBtn.disabled = true;
+
+    try{
+        const url =
+            `${API_BASE_URL}/api/table/` +
+            `${encodeURIComponent(currentTable)}` +
+            `?page=${page}&limit=${PAGE_SIZE}`;
+
+        const response =
+            await fetch(url);
+
+        const result =
+            await response.json();
+
+        if(
+            !response.ok ||
+            !result.success
+        ){
+            throw new Error(
+                result.message ||
+                "Unable to load products"
+            );
+        }
+
+        const newProducts =
+            Array.isArray(result.data)
+                ? result.data
+                : [];
+
+        products =
+            reset
+                ? newProducts
+                : [
+                    ...products,
+                    ...newProducts
+                ];
+
+        totalProductsText.textContent =
+            result.total ?? products.length;
+
+        hasMore =
+            result.hasMore === true;
+
+        if(hasMore){
+            page += 1;
+
+            loadMoreBtn.classList.add(
+                "show"
+            );
+        }else{
+            loadMoreBtn.classList.remove(
+                "show"
+            );
+        }
+
+        renderProducts();
+
+    }catch(error){
+        console.error(error);
+
+        productsGrid.innerHTML = `
+            <div class="empty">
+
+                <h3>
+                    Could not load products
+                </h3>
+
+                <p>
+                    ${escapeHtml(error.message)}
+                </p>
+
+            </div>
+        `;
+
+        totalProductsText.textContent = "0";
+        visibleProductsText.textContent = "0";
+
+        showMessage(
+            error.message,
+            "error"
+        );
+
+    }finally{
+        loading = false;
+        loadMoreBtn.disabled = false;
+    }
+}
+
+/* ==============================
+   SAVE PRODUCT
+============================== */
+
+async function saveProduct(
+    productId,
+    button
+){
+    const card =
+        button.closest(".card");
+
+    const inputs =
+        card.querySelectorAll(
+            "[data-field]"
+        );
+
+    const updates = {};
+
+    inputs.forEach(input => {
+        const field =
+            input.dataset.field;
+
+        let value =
+            input.value.trim();
+
+        if([
+            "original_price",
+            "discount_price",
+            "quantity"
+        ].includes(field)){
+            value = Number(value);
+
+            if(!Number.isFinite(value)){
+                value = 0;
+            }
+        }
+
+        updates[field] = value;
+    });
+
+    const oldText =
+        button.textContent.trim();
+
+    button.disabled = true;
+    button.textContent = "Saving...";
+
+    try{
+        const response =
+            await fetch(
+                `${API_BASE_URL}/api/table/` +
+                `${encodeURIComponent(currentTable)}/` +
+                `${encodeURIComponent(productId)}`,
+                {
+                    method:"PATCH",
+
+                    headers:{
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:JSON.stringify(updates)
+                }
+            );
+
+        const result =
+            await response.json();
+
+        if(
+            !response.ok ||
+            !result.success
+        ){
+            throw new Error(
+                result.message ||
+                "Unable to update product"
+            );
+        }
+
+        const index =
+            products.findIndex(
+                product =>
+                    Number(product.id) ===
+                    Number(productId)
+            );
+
+        if(index !== -1){
+            products[index] = {
+                ...products[index],
+                ...result.data
+            };
+        }
+
+        button.textContent = "Saved ✓";
+
+        showMessage(
+            `Product #${productId} updated successfully`,
+            "success"
+        );
+
+        setTimeout(() => {
+            button.textContent = oldText;
+            button.disabled = false;
+        },1200);
+
+    }catch(error){
+        console.error(error);
+
+        button.textContent = "Retry";
+        button.disabled = false;
+
+        showMessage(
+            error.message,
+            "error"
+        );
+    }
+}
+
+/* ==============================
+   TABLE CHANGE
+============================== */
+
+tableSelect.addEventListener(
+    "change",
+    () => {
+        currentTable =
+            tableSelect.value;
+
+        currentTableText.textContent =
+            currentTable;
+
+        searchInput.value = "";
+
+        loadProducts(true);
+    }
+);
+
+/* ==============================
+   SEARCH
+============================== */
+
+searchInput.addEventListener(
+    "input",
+    renderProducts
+);
+
+
+/* ==============================
+   LOAD MORE
+============================== */
+
+loadMoreBtn.addEventListener(
+    "click",
+    () => {
+        loadProducts(false);
+    }
+);
+
+/* ==============================
+   INITIAL LOAD
+============================== */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+        currentTableText.textContent =
+            currentTable;
+
+        loadProducts(true);
+    }
+);
+</script>
+
+</body>
+</html>
